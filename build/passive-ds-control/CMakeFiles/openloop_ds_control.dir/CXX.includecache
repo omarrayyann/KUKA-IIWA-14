@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/nyuad/catkin_ws/src/passive-ds-control/include/openloop_ds_controller.h
+passive_ds_typedefs.h
+/home/nyuad/catkin_ws/src/passive-ds-control/include/passive_ds_typedefs.h
+
+/home/nyuad/catkin_ws/src/passive-ds-control/include/passive_ds_typedefs.h
+eigen3/Eigen/Dense
+/home/nyuad/catkin_ws/src/passive-ds-control/include/eigen3/Eigen/Dense
+
+/home/nyuad/catkin_ws/src/passive-ds-control/src/openloop_ds_controller.cpp
+openloop_ds_controller.h
+/home/nyuad/catkin_ws/src/passive-ds-control/src/openloop_ds_controller.h
+

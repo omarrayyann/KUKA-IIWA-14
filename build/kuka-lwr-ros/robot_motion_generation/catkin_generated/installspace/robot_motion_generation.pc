@@ -1,0 +1,8 @@
+prefix=/home/nyuad/catkin_ws/install
+
+Name: robot_motion_generation
+Description: Description of robot_motion_generation
+Version: 0.0.0
+Cflags: -I${prefix}/include -I/usr/include/eigen3
+Libs: -L${prefix}/lib -lrobot_motion_generation
+Requires: roscpp cmake_modules

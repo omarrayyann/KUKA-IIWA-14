@@ -1,0 +1,8 @@
+prefix=/home/nyuad/catkin_ws/install
+
+Name: passive_ds_control
+Description: Description of passive_ds_control
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lpassive_ds_control -lcascade_ds_control -lopenloop_ds_control
+Requires: 

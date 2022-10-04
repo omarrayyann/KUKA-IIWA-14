@@ -1,0 +1,8 @@
+prefix=/home/nyuad/catkin_ws/install
+
+Name: lwr_fri
+Description: Description of lwr_fri
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime fri_library_ros lwr_console

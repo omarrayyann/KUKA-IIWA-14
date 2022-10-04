@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/CMakeFiles/FRILibrary"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/CMakeFiles/FRILibrary.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/CMakeFiles/FRILibrary-complete.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-install.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-mkdir.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-download.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-update.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-patch.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-configure.rule"
+		},
+		{
+			"file" : "/home/nyuad/catkin_ws/build/kuka-lwr-ros/kuka_lwr/lwr_hw/FRILibrary-prefix/src/FRILibrary-stamp/FRILibrary-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"FRILibrary"
+		],
+		"name" : "FRILibrary"
+	}
+}
