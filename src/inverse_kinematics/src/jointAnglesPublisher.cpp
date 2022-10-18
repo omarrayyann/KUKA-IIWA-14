@@ -114,6 +114,8 @@ double phi5_max = 2.967055; //170°
 double phi6_max = 2.09435; //120°
 double phi7_max = 3.054325; //175°
 
+    float stickLength = 0;
+
 //arm angle
 double armAng = 0; //0-360°
 
@@ -200,7 +202,17 @@ void getVariablesFromConsole(float& x, float& y, float& z, float& eefPhi, float&
     
 }
 
+void fixForStick(float& xPosition, float& yPosition, float& zPosition, float eefPhiOrientation, float eefThetaOrientation){
+        
+        float eefThetaOrientationRadians = ceil(eefThetaOrientation*deg2rad * 100000.0) / 100000.0;
+        float eefPhiOrientationRadians = ceil(eefPhiOrientation*deg2rad*100000.0) / 100000.0;
+        cout << "Before: " << endl << xPosition << endl << yPosition << endl << zPosition << endl; 
+        xPosition -= stickLength*sin(-eefThetaOrientationRadians)*cos(eefPhiOrientationRadians-(M_PI/2));
+        yPosition -= stickLength*sin(-eefThetaOrientationRadians)*sin(eefPhiOrientationRadians-(M_PI/2));
+        zPosition -= stickLength*cos(-eefThetaOrientationRadians);
+                cout << "After: " << endl << xPosition << endl << yPosition << endl << zPosition << endl; 
 
+}
 
 int main(int argc, char *argv[])
 {
@@ -224,7 +236,6 @@ int main(int argc, char *argv[])
     float eefPhiOrientation;
     float eefThetaOrientation;
     float armAngle;
-    float stickLength = 0;
     
 	while (ros::ok())
 	{
@@ -316,6 +327,9 @@ int main(int argc, char *argv[])
 
               jointAngles = new float[7];
      
+            fixForStick(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation) ;
+       
+
         if(inv_kin_kuka(xPosition + origin.at(0), yPosition + origin.at(1), zPosition + origin.at(2), eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
             std_msgs::Float32MultiArray messageArray;
@@ -355,6 +369,7 @@ int main(int argc, char *argv[])
     
         jointAngles = new float[7];
      
+                 fixForStick(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation);
         if(inv_kin_kuka(xPosition + origin.at(0), yPosition + origin.at(1), zPosition + origin.at(2), eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
             std_msgs::Float32MultiArray messageArray;
@@ -435,6 +450,9 @@ int main(int argc, char *argv[])
                     armAngle = stof(eefPosition.at(5));
     
                     jointAngles = new float[7];
+
+                                fixForStick(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation);
+
 
                     if(inv_kin_kuka(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
@@ -788,6 +806,9 @@ int main(int argc, char *argv[])
 
                     }
                     else{
+
+                                    fixForStick(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation);
+
                     if(inv_kin_kuka(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
                     messageArray.data.clear();
