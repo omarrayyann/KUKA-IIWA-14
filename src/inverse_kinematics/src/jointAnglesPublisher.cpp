@@ -39,6 +39,7 @@
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Float32MultiArray.h"
 #include <sstream>
+#include <stack>
 using namespace std;
 
 //for udp -----------------------------------------------------------------------------------------
@@ -223,6 +224,7 @@ int main(int argc, char *argv[])
     float eefPhiOrientation;
     float eefThetaOrientation;
     float armAngle;
+    float stickLength = 0;
     
 	while (ros::ok())
 	{
@@ -234,19 +236,119 @@ int main(int argc, char *argv[])
         cout << "3: Set new origin" << endl;
         cout << "4: Create File" << endl;
         cout << "5: Run txt package" << endl;
+        cout << "6: Edit Stick" << endl;
+        cout << "7: Control using keys" << endl;
+        cout << "8: Reverse File" << endl;
         cout << "Command: ";
         cin >> commandPicked;
 
-        while(commandPicked!="1" && commandPicked!="2" && commandPicked!="3" && commandPicked!="4" && commandPicked!="5"){
+        while(commandPicked!="1" && commandPicked!="2" && commandPicked!="3" && commandPicked!="4" && commandPicked!="5" && commandPicked!="6" && commandPicked!="7" && commandPicked!="8"){
             cout << "Wrong command entered, please try again!" << endl;
             cout << "1: Move EEF" << endl;
             cout << "2: Read File" << endl;
             cout << "3: Set new origin" << endl;
             cout << "4: Create File" << endl;
+            cout << "5: Run txt package" << endl;
+            cout << "6: Edit Stick" << endl;
+            cout << "7: Control using keys" << endl;
+            cout << "8: Reverse File" << endl;
             cout << "Command: ";
             cin >> commandPicked;
         }
 
+        if (commandPicked=="8"){
+            string fileName;
+            cout << "Enter file name: " << endl;
+            cin >> fileName;
+            stack<string> lines;
+            ifstream ordered;
+            ordered.open(fileName);
+            string line = "";
+            if(!ordered.fail()){
+                while(!ordered.eof()){
+                getline(ordered, line);
+                lines.push(line);
+                }
+                cout << "Enter new file name (reversed): ";
+                cin >> fileName;
+                ofstream reversedFile;
+                reversedFile.open(fileName);
+                while(!lines.empty()){
+                    reversedFile << lines.top() << endl;
+                    lines.pop();
+                }
+            }
+            else{
+                cout << "Could not find the file" << endl;
+            }
+        continue;
+        }
+        else if (commandPicked=="7"){
+            float array[6] = {xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle};
+            cout << "1: X\n2: Y\n3: Z\n4: Phi\n5: Theta\n6: Arm Angle" << endl;
+            int indexToChange;
+            cout << "Enter Parameter to change: ";
+            cin >> indexToChange;
+            indexToChange--;
+            bool run = true;
+            string commandi = "";
+            while(run){
+                cout << "Current Value: "  << array[indexToChange] << endl;
+                cin >> commandi;
+                if(commandi=="u"){
+                array[indexToChange] += 1;                
+                }
+                else if(commandi=="d"){
+                                    array[indexToChange] -= 1;                
+                    }
+                    else{
+                        run = false;
+                        break;
+                    }
+
+                            cout << "New Value: "  << array[indexToChange] << endl;
+             xPosition = array[0];
+             yPosition = array[1];
+             zPosition = array[2];
+             eefPhiOrientation = array[3];
+             eefThetaOrientation = array[4];
+             armAngle = array[5];
+
+              jointAngles = new float[7];
+     
+        if(inv_kin_kuka(xPosition + origin.at(0), yPosition + origin.at(1), zPosition + origin.at(2), eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
+
+            std_msgs::Float32MultiArray messageArray;
+            messageArray.data.clear();
+            messageArray.data = {jointAngles[0], jointAngles[1], jointAngles[2], jointAngles[3], jointAngles[4], jointAngles[5], jointAngles[6]};
+
+            pub.publish(messageArray);
+            messageArray.data.clear();
+            messageArray.data = {xPosition + origin.at(0), yPosition + origin.at(1),  zPosition + origin.at(2)};
+            
+            pub2.publish(messageArray);
+
+            delete []jointAngles;
+
+            ROS_INFO("Published new joint angles required");
+
+        }
+        else{
+            ROS_INFO("Could not come up with joint angles required");
+        }
+
+
+}
+
+        
+        }
+        if (commandPicked=="6"){
+            cout << "Current Stick Lenght: " <<  stickLength << endl;
+            cout << "Enter new Stick Length: " ;
+            cin >> stickLength;
+            cout << "Stick Length Updated to: " <<  stickLength << endl;
+
+        }
         if (commandPicked=="1"){
 
             getVariablesFromConsole(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle);
@@ -292,6 +394,38 @@ int main(int argc, char *argv[])
                     string line = "";
                     getline(inputFile, line);
                     line = removeSpaces(line);
+                    if(line[1]==':'){
+                        cout << "line: " << line << endl;
+                        int jointAngleNumber = stoi(to_string(line[0] - '0'));
+                        line = line.erase(0,2);
+                        jointAngles = new float[7];
+                        jointAngles[0] =  (float)phi1_old*180/M_PI;
+                        jointAngles[1] =  (float)phi2_old*180/M_PI;
+                        jointAngles[2] =  (float)phi3_old*180/M_PI;
+                        jointAngles[3] =  (float)phi4_old*180/M_PI;
+                        jointAngles[4] =  (float)phi5_old*180/M_PI;
+                        jointAngles[5] =  (float)phi6_old*180/M_PI;
+                        jointAngles[6] =  (float)phi7_old*180/M_PI;
+                        jointAngles[jointAngleNumber-1] = stof(line);
+                        cout << "joint Angle Number: " << jointAngleNumber << endl << "joint Angle 0: " << jointAngles[0] << endl << "new joint Angle: " << stof(line) << endl;
+
+                         messageArray.data.clear();
+                    messageArray.data = {jointAngles[0], jointAngles[1], jointAngles[2], jointAngles[3], jointAngles[4], jointAngles[5], jointAngles[6]};
+
+                    delete []jointAngles;
+
+                    pub.publish(messageArray);
+
+                    messageArray.data.clear();
+                    messageArray.data = {xPosition, yPosition,  zPosition};
+                    
+                    pub2.publish(messageArray);
+
+
+                    ROS_INFO("Published new joint angles required");
+
+                    }
+                    else{
                     vector<string> eefPosition = split(line, ",");
                     xPosition = stof(eefPosition.at(0)) + origin.at(0);
                     yPosition = stof(eefPosition.at(1)) + origin.at(1);
@@ -305,6 +439,8 @@ int main(int argc, char *argv[])
                     if(inv_kin_kuka(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
                     messageArray.data.clear();
+
+                    cout << "try: " << jointAngles[0] << endl;
                     messageArray.data = {jointAngles[0], jointAngles[1], jointAngles[2], jointAngles[3], jointAngles[4], jointAngles[5], jointAngles[6]};
 
                     delete []jointAngles;
@@ -320,6 +456,7 @@ int main(int argc, char *argv[])
                     ROS_INFO("Published new joint angles required");
                     }
 
+                }
                     rate.sleep();
 
                 }
@@ -380,7 +517,7 @@ int main(int argc, char *argv[])
             float endZ = 0;
             float frequency = 0;
            
-            cout << "1- Non-Vertical Line" << endl << "2- Vertical Line" << endl  << "3- Through Z" << endl << "command: ";
+            cout << "1- Non-Vertical Line" << endl << "2- Vertical Line" << endl  << "3- Through Z" << endl <<  "4- XYZ" << endl << "command: ";
             string command;
             cin >> command;
 
@@ -418,10 +555,7 @@ int main(int argc, char *argv[])
             cin >> c;
             cout << "Enter the y-ending ";
             cin >> cTo;
-            cout << "Enter the gradient: ";
-            cin >> m;
-            cout << "Enter the y-intercept: ";
-            cin >> c;
+
 
             cout << "Enter z: " ;
             cin >> zPosition;
@@ -472,11 +606,63 @@ int main(int argc, char *argv[])
 
 
               }
+              else if (command == "4"){
+                
+                float startingX, endingX, startingY, endingY, startingZ, endingZ;
 
-            
+                cout << "Enter Starting X: ";
+                cin >> startingX;
+
+                cout << "Enter Ending X: ";
+                cin >> endingX;
+
+                cout << "Enter Starting Y: ";
+                cin >> startingY;
+
+                cout << "Enter Ending Y: ";
+                cin >> endingY;
+
+                cout << "Enter Starting Z: ";
+                cin >> startingZ;
+
+                cout << "Enter Ending Z: ";
+                cin >> endingZ;
+
+                cout << "Enter the EEF Phi: " ;
+                cin >> eefPhiOrientation;
+                cout << "Enter the EEF Theta: ";
+                cin >> eefThetaOrientation;
+                cout << "Enter the Arm Angle: " ;
+                cin >> armAngle;
+        
+        
+                cout << "Enter number of points: " ;
+                cin >> n;
+                
+
+                cout << "Frames per second (frequencey): " ;
+                cin >> frequency;
 
             file << frequency << endl;
 
+                for(int i = 0; i<=n; i++){
+                        
+                        float currentX = startingX + (((endingX-startingX)/(float)n)*(float)i) ;
+                        float currentY = startingY + (((endingY-startingY)/(float)n)*(float)i) ;
+                        float currentZ = startingZ + (((endingZ-startingZ)/(float)n)*(float)i) ;
+
+                        file << currentX << ", " << currentY << ", " << currentZ << ", " << eefPhiOrientation << ", " << eefThetaOrientation << ", " << armAngle << endl;
+
+                    }
+
+
+
+              }
+
+            if(command!="4"){
+
+            file << frequency << endl;
+            }
             if(command=="2"){
 
 
@@ -492,8 +678,11 @@ int main(int argc, char *argv[])
 
             }
             else if (command=="1"){
-            for(int x = from; x!=to; x+=((to-from)/n)){
+                cout << "from: " << from << endl;
+                cout << "to: " << to << endl;
 
+            for (int j = 0; j<n; j++){
+                float x = from+(((to-from)/n)*j);
                 y = m*x + c;
                 file << x << ", " << y << ", " << zPosition << ", " << eefPhiOrientation << ", " << eefThetaOrientation << ", " << armAngle << endl;
 
@@ -536,6 +725,13 @@ int main(int argc, char *argv[])
             string filePath = "";
             getline(file, filePath);
 
+            if(filePath.substr(0, 5) == "pause"){
+                filePath.erase(0,5);
+                ros::Rate rate = ros::Rate(1/(stof(filePath)));
+                rate.sleep();
+                continue;
+            }
+
             ifstream inputFile;
             inputFile.open(filePath);
 
@@ -560,6 +756,38 @@ int main(int argc, char *argv[])
     
                     jointAngles = new float[7];
 
+                   if(line[1]==':'){
+                        cout << "line: " << line << endl;
+                        int jointAngleNumber = stoi(to_string(line[0] - '0'));
+                        line = line.erase(0,2);
+                        jointAngles = new float[7];
+                        jointAngles[0] =  (float)phi1_old*180/M_PI;
+                        jointAngles[1] =  (float)phi2_old*180/M_PI;
+                        jointAngles[2] =  (float)phi3_old*180/M_PI;
+                        jointAngles[3] =  (float)phi4_old*180/M_PI;
+                        jointAngles[4] =  (float)phi5_old*180/M_PI;
+                        jointAngles[5] =  (float)phi6_old*180/M_PI;
+                        jointAngles[6] =  (float)phi7_old*180/M_PI;
+                        jointAngles[jointAngleNumber-1] = stof(line);
+                        cout << "joint Angle Number: " << jointAngleNumber << endl << "joint Angle 0: " << jointAngles[0] << endl << "new joint Angle: " << stof(line) << endl;
+
+                         messageArray.data.clear();
+                    messageArray.data = {jointAngles[0], jointAngles[1], jointAngles[2], jointAngles[3], jointAngles[4], jointAngles[5], jointAngles[6]};
+
+                    delete []jointAngles;
+
+                    pub.publish(messageArray);
+
+                    messageArray.data.clear();
+                    messageArray.data = {xPosition, yPosition,  zPosition};
+                    
+                    pub2.publish(messageArray);
+
+
+                    ROS_INFO("Published new joint angles required");
+
+                    }
+                    else{
                     if(inv_kin_kuka(xPosition, yPosition, zPosition, eefPhiOrientation, eefThetaOrientation, armAngle, jointAngles)){
 
                     messageArray.data.clear();
@@ -576,10 +804,10 @@ int main(int argc, char *argv[])
 
 
                     ROS_INFO("Published new joint angles required");
+                                        rate.sleep();
                     }
 
-                    rate.sleep();
-
+                }
                 }
 
 
@@ -673,8 +901,8 @@ bool inv_kin_kuka(double X, double Y, double Z, double eef_phi, double eef_theta
     
     else if (abs(phi1) >= phi1_max |abs(phi2) >= phi2_max |abs(phi3) >= phi3_max |abs(phi4) >= phi4_max |abs(phi5) >= phi5_max |abs(phi6) >= phi6_max |abs(phi7) >= phi7_max)
        {
-        // armAng = adapt_elbow_position(X, Y, Z, eef_phi, eef_theta, armAng_in);
-        return false;
+        armAng = adapt_elbow_position(X, Y, Z, eef_phi, eef_theta, armAng_in);
+        // return false;
        }
     //store calculated joint values for next round
     phi1_old = phi1;
